@@ -12,7 +12,7 @@ from backend.pubsub import PubSub
 
 app = Flask(__name__)
 blockchain = Blockchain()
-wallet = Wallet()
+wallet = Wallet(blockchain)
 transaction_pool = TransactionPool()
 pubsub = PubSub(blockchain, transaction_pool)
 
@@ -26,16 +26,16 @@ def route_blockchain():
 
 @app.route('/blockchain/mine')
 def route_blockchain_mine():
-    transaction_data = 'stubbed_transaction_data'
-
+    transaction_data = transaction_pool.transaction_data()
+    transaction_data.append(Transaction.reward_transaction(wallet).to_json())
     blockchain.add_block(transaction_data)
-
     block = blockchain.chain[-1]
     pubsub.broadcast_block(block)
+    transaction_pool.clear_blockchain_transactions(blockchain)
 
     return jsonify(block.to_json())
 
-@app.route("/wallet/transact", methods=["POST"])
+@app.route('/wallet/transact', methods=['POST'])
 def route_wallet_transact():
     transaction_data = request.get_json()
     transaction = transaction_pool.existing_transaction(wallet.address)
@@ -43,20 +43,26 @@ def route_wallet_transact():
     if transaction:
         transaction.update(
             wallet,
-            transaction_data["recipient"],
-            transaction_data["amount"]
+            transaction_data['recipient'],
+            transaction_data['amount']
         )
     else:
         transaction = Transaction(
             wallet,
-            transaction_data["recipient"],
-            transaction_data["amount"]
+            transaction_data['recipient'],
+            transaction_data['amount']
         )
 
     pubsub.broadcast_transaction(transaction)
 
     return jsonify(transaction.to_json())
 
+@app.route("/wallet/info")
+def route_wallet_info():
+    return jsonif({
+        "address": wallet.address,
+        "balance": wallet.balance 
+    })
 
 ROOT_PORT = 5000
 PORT = ROOT_PORT
@@ -74,4 +80,3 @@ if os.environ.get('PEER') == 'True':
         print(f'\n -- Error synchronizing: {e}')
 
 app.run(port=PORT)
-
