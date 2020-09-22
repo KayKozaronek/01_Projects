@@ -1,11 +1,6 @@
-**If you're using Powershell and want to execute scripts** 
-```
-Set-ExecutionPolicy Unrestricted
-```
-
 **Activate the virtual environment**
 ```
-source blockchain-env/Scripts/activate
+source blockchain-env/bin/activate
 ```
 
 **Install all packages**
@@ -18,7 +13,7 @@ pip3 install -r requirements.txt
 Make sure to activate the virtual environment.
 
 ```
-python -m pytest backend/tests
+python3 -m pytest backend/tests
 ```
 
 **Run the application and API**
@@ -26,7 +21,7 @@ python -m pytest backend/tests
 Make sure to activate the virtual environment.
 
 ```
-python -m backend.app
+python3 -m backend.app
 ```
 
 **Run a peer instance**
@@ -34,5 +29,20 @@ python -m backend.app
 Make sure to activate the virtual environment.
 
 ```
-export PEER =True && python -m backend.app
+export PEER=True && python3 -m backend.app
+```
+
+**Run the frontend**
+
+In the frontend directory:
+```
+npm run start
+```
+
+**Seed the backend with data**
+
+Make sure to activate the virtual environment.
+
+```
+export SEED_DATA=True && python3 -m backend.app
 ```
